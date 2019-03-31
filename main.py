@@ -6,23 +6,29 @@ from sympy.abc import A
 
 
 def main():
-    data = np.array([4, 3, 1])[:, np.newaxis] #column vector
-    mat = np.array([[2, 7, 6], [9, 5, 1], [4, 3, 8]])
+    data = np.array([2, 1, 8])[:, np.newaxis] #column vector
+    mat = np.array([[2, 7, 6],
+                    [9, 5, 1],
+                    [4, 3, 8]])
 
     res1 = f1(data,mat)
+    print("======> f1 output:")
     print("Value =\n",res1[0])
     print("Gradient =\n", res1[1])
     print("Hessian =\n", res1[2])
 
     res1 = f2(data, mat)
+    print("======> f2 output:")
     print("Value =\n",res1[0])
     print("Gradient =\n", res1[1])
     print("Hessian =\n", res1[2])
 
 def f1(data,matrix):
     Ax = np.dot(matrix,data)
+    print("Ax=\n",Ax)
     val, grad, hess = Task3_1_func(Ax)
-    return val, grad, hess
+    print("grad=\n",grad)
+    return val, np.dot(np.transpose(matrix),grad), hess
 
 def f2(data,matrix):
     Ax = np.dot(matrix, data)
@@ -38,6 +44,7 @@ def Task3_1_func(x):
     v = np.ones(x.shape) # v -> column vector
     vT = np.transpose(v)
     val = np.sin(np.dot(vT, x))
+    print("np.cos(59*31*75)=",np.cos(59*31*75))
     grad = v*np.cos(np.dot(vT, x))
     hess = np.dot(-v*np.sin(np.dot(vT, x)),vT)
     return val, grad, hess
