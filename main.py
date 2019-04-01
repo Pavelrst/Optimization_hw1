@@ -1,8 +1,8 @@
 import sympy as sy
 import numpy as np
 from sympy import *
-from sympy.abc import x
-from sympy.abc import A
+# from sympy.abc import x
+# from sympy.abc import A
 
 
 def main():
@@ -10,49 +10,103 @@ def main():
     mat = np.array([[2, 7, 6],
                     [9, 5, 1],
                     [4, 3, 8]])
+    I = np.array([[1, 0, 0],
+                    [0, 1, 0],
+                    [0, 0, 1]])
 
-    res1 = f1(data,mat)
+    val, grad, hess = Task3_1_func(data)
+
+    print("======> Task3_1_func output:")
+    print("Value =\n", val)
+    print("Gradient =\n", grad)
+    print("Hessian =\n", hess)
+
+    sin_dict = {'A': I,
+                'val': sin_val,
+                'grad': sin_grad,
+                'hessian': sin_hessian}
+    res1 = f1(data, sin_dict)
     print("======> f1 output:")
     print("Value =\n",res1[0])
     print("Gradient =\n", res1[1])
     print("Hessian =\n", res1[2])
 
-    res1 = f2(data, mat)
-    print("======> f2 output:")
-    print("Value =\n",res1[0])
-    print("Gradient =\n", res1[1])
-    print("Hessian =\n", res1[2])
 
-def f1(data,matrix):
-    Ax = np.dot(matrix,data)
-    print("Ax=\n",Ax)
-    val, grad, hess = Task3_1_func(Ax)
-    print("grad=\n",grad)
-    return val, np.dot(np.transpose(matrix),grad), hess
+'''
+x - data
+par - value of phi, gradient value of phi, hessian_funct of phi, A
 
-def f2(data,matrix):
-    Ax = np.dot(matrix, data)
-    phi_val, phi_grad, phi_hess = Task3_1_func(Ax)
-    exp_val, exp_derv, exp_secd = Task3_2_func(phi_val)
-    grad = phi_grad*exp_derv
-    hess = phi_hess*(exp_derv + exp_secd)
-    return exp_val, grad, hess
+out - value of f, gradient vvalue of f, hessian value of f 
+'''
+def f1(x, par):
+    mat = par['A']
+    phi_val = par['val'](np.dot(mat,x))
+    phi_g = par['grad'](np.dot(mat,x))
+    phi_H = par['hessian'](np.dot(mat,x))
 
-def Task3_1_func(x):
-    # This function returns value, gradient, hessian
-    # of expression f([x1,x2,x3])=sin(x1*x2*x3)
-    v = np.ones(x.shape) # v -> column vector
-    vT = np.transpose(v)
-    val = np.sin(np.dot(vT, x))
-    print("np.cos(59*31*75)=",np.cos(59*31*75))
-    grad = v*np.cos(np.dot(vT, x))
-    hess = np.dot(-v*np.sin(np.dot(vT, x)),vT)
+    matT = np.transpose(mat)
+    grad = np.dot(matT,phi_g)
+    hess = np.dot(np.dot(matT,phi_H)[:,:,0],mat)
+
+    return phi_val, grad, hess
+
+
     return val, grad, hess
 
+def sin_val(x):
+    assert len(x) == 3
+    return np.sin(x[0] * x[1] * x[2])
+
+def sin_grad(x):
+    assert len(x) == 3
+    prod = x[0] * x[1] * x[2]
+    grad = [np.cos(prod) * x[1] * x[2],
+            np.cos(prod) * x[0] * x[2],
+            np.cos(prod) * x[0] * x[1]]
+    return np.array(grad)
+
+def sin_hessian(x):
+    assert len(x) == 3
+    prod = x[0] * x[1] * x[2]
+    dx1dx1 = -np.sin(prod) * x[1] * x[1] * x[2] * x[2]
+    dx1dx2 = -np.sin(prod) * x[0] * x[1] * x[2] * x[2] + np.cos(prod) * x[2]
+    dx1dx3 = -np.sin(prod) * x[0] * x[1] * x[1] * x[2] + np.cos(prod) * x[1]
+
+    dx2dx1 = dx1dx2
+    dx2dx2 = -np.sin(prod) * x[0] * x[0] * x[2] * x[2]
+    dx2dx3 = -np.sin(prod) * x[0] * x[0] * x[1] * x[2] + np.cos(prod) * x[0]
+
+    dx3dx1 = dx1dx3
+    dx3dx2 = dx2dx3
+    dx3dx3 = -np.sin(prod) * x[0] * x[0] * x[1] * x[1]
+
+    hessian = [[dx1dx1, dx1dx2, dx1dx3],
+               [dx2dx1, dx2dx2, dx2dx3],
+               [dx3dx1, dx3dx2, dx3dx3]]
+    return hessian
+
+def Task3_1_func(x):
+    return sin_val(x), sin_grad(x), sin_hessian(x)
+
+def exp_val(x):
+    return np.exp(x)
+
+def exp_grad(x):
+    assert len(x) == 3
+    return np.exp(x)
+
+def exp_hess(x):
+    assert len(x) == 3
+    return np.hess(x)
+
 def Task3_2_func(x):
+    assert len(x) == 3
     # This function return value, fist derivative, second derivative
     # of expression exp(x)
-    return np.exp(x), np.exp(x), np.exp(x)
+    assert len(x) == 3
+    return exp_val(x), exp_grad(x), exp_hess(x)
+
+
 
 
 if __name__ == "__main__":
