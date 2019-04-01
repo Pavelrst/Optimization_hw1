@@ -25,33 +25,76 @@ def main():
                 'val': sin_val,
                 'grad': sin_grad,
                 'hessian': sin_hessian}
-    res1 = f1(data, sin_dict)
+    res1 = f1(data, sin_dict, nargout=3)
     print("======> f1 output:")
     print("Value =\n",res1[0])
     print("Gradient =\n", res1[1])
     print("Hessian =\n", res1[2])
 
+    exp_dict= {"phi_val": sin_val,
+               "phi_g": sin_grad,
+               "phi_h": sin_hessian,
+               "h": exp_val,
+               "h'": exp_grad,
+               "h''": exp_hess}
+
+    res2 = f2(data, exp_dict, nargout=3)
+    print("======> f2 output:")
+    print("Value =\n", res2[0])
+    print("Gradient =\n", res2[1])
+    print("Hessian =\n", res2[2])
 
 '''
 x - data
-par - value of phi, gradient value of phi, hessian_funct of phi, A
+par - value_funct of phi, gradient_funct of phi, hessian_funct of phi, A
 
 out - value of f, gradient vvalue of f, hessian value of f 
 '''
-def f1(x, par):
+def f1(x, par, nargout=3):
+    assert nargout in range(1, 4)
     mat = par['A']
-    phi_val = par['val'](np.dot(mat,x))
-    phi_g = par['grad'](np.dot(mat,x))
-    phi_H = par['hessian'](np.dot(mat,x))
+    phi_val = par['val'](np.dot(mat, x))
 
+    if nargout == 1:
+        return phi_val
+
+    phi_g = par['grad'](np.dot(mat, x))
     matT = np.transpose(mat)
-    grad = np.dot(matT,phi_g)
-    hess = np.dot(np.dot(matT,phi_H)[:,:,0],mat)
+    grad = np.dot(matT, phi_g)
+
+    if nargout == 2:
+        return phi_val, grad
+
+    phi_H = par['hessian'](np.dot(mat, x))
+    hess = np.dot(np.dot(matT,phi_H)[:,:,0], mat)
 
     return phi_val, grad, hess
 
+'''
+x - data
+par - value_funct of phi, gradient_funct of phi, hessian_funct of phi
 
-    return val, grad, hess
+out - value of f, gradient vvalue of f, hessian value of f 
+'''
+def f2(x, par, nargout=3):
+    assert nargout in range(1, 4)
+    phi_val = par["phi_val"](x)
+    f2_val = par["h"](phi_val)
+    if nargout == 1:
+        return f2_val
+
+    grad_phi = par["phi_g"](x)
+    h_der = par["h'"](phi_val)
+    f2_grad = grad_phi * h_der
+    if nargout == 2:
+        return f2_val, f2_grad
+
+    hess_phi = par["phi_h"](x)
+    h_sec_der = par["h''"](phi_val)
+    f2_hess = hess_phi * (h_der + h_sec_der)
+
+    return f2_val, f2_grad, f2_hess
+
 
 def sin_val(x):
     assert len(x) == 3
@@ -92,15 +135,12 @@ def exp_val(x):
     return np.exp(x)
 
 def exp_grad(x):
-    assert len(x) == 3
     return np.exp(x)
 
 def exp_hess(x):
-    assert len(x) == 3
-    return np.hess(x)
+    return np.exp(x)
 
 def Task3_2_func(x):
-    assert len(x) == 3
     # This function return value, fist derivative, second derivative
     # of expression exp(x)
     assert len(x) == 3
