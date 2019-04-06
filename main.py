@@ -14,11 +14,24 @@ def main():
     f1_numeric_par = {'epsilon': E_MACHINE, 'f_par': f1_analytic_par}
     f1_numeric_grad = numdiff(f1, X, f1_numeric_par, nargout=1)
 
+    f2_analytic_par = {"phi_val": sin_val, "h": exp_val,
+                       "phi_g": sin_grad, "h'": exp_grad}
+    f2_val, f2_analytic_grad = f2(X, f2_analytic_par, nargout=2)
+    f2_numeric_par = {'epsilon': E_MACHINE, 'f_par': f2_analytic_par}
+    f2_numeric_grad = numdiff(f2, X, f2_numeric_par, nargout=1)
+
     # Compute difference between numerical and analytical gradient
     f1_grad_error = abs(f1_analytic_grad - f1_numeric_grad)
     print("analytic grad=", f1_analytic_grad,
           "\nnumeric grad=", f1_numeric_grad,
-          "\nerror=", f1_grad_error)
+          "\nerror=", f1_grad_error,
+          "\n\n\n")
+
+    f2_grad_error = abs(f2_analytic_grad - f2_numeric_grad)
+    print("analytic grad=", f2_analytic_grad,
+          "\nnumeric grad=", f2_numeric_grad,
+          "\nerror=", f2_grad_error,
+          "\n\n\n")
 
 
 
@@ -123,10 +136,10 @@ def f2(x, par, nargout=3):
             "phi_val" : pointer to function phi, nonlinear multivariate function R^m -> R
             "h" : pointer to nonlinear scalar function, h: R -> R
         for nargout > 1:
-            "grad_phi" : pointer to gradient function of phi
+            "phi_g" : pointer to gradient function of phi
             "h'" : pointer to derivative function of h
         for nargout > 2:
-            "hess_phi" : pointer to hessian function of phi
+            "phi_h" : pointer to hessian function of phi
             "h''" : pointer to second derivative function of h
     :param nargout: number of arguments given, mimics nargout of matlab, can be 1,2 or 3
     :return: depends on nargout.
@@ -213,17 +226,14 @@ def Task3_1_func(x):
 
 
 def exp_val(x):
-    assert isinstance(x, np.ndarray)
     return np.exp(x)
 
 
 def exp_grad(x):
-    assert isinstance(x, np.ndarray)
     return np.exp(x)
 
 
 def exp_hess(x):
-    assert isinstance(x, np.ndarray)
     return np.exp(x)
 
 
