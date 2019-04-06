@@ -1,52 +1,72 @@
 import numpy as np
+import matplotlib as pl
 
 
 def main():
-    '''
-    A testing function for the excercise's required functions
-    :return:
-    '''
-    data = np.array([2, 1, 8])[:, np.newaxis]  # column vector
-    mat = np.array([[2, 7, 6],
-                    [9, 5, 1],
-                    [4, 3, 8]])
-    I = np.array([[1, 0, 0],
-                    [0, 1, 0],
-                    [0, 0, 1]])
+    X = np.array([1, 1, 1])
+    A = np.array([[2, 7, 6],
+                  [9, 5, 1],
+                  [4, 3, 8]])
+    E_MACHINE = 2 * pow(10, -16)
 
-    val, grad, hess = Task3_1_func(data)
+    f1_analytic_par = {'A': A, 'val': sin_val, 'grad': sin_grad}
+    f1_val, f1_analytic_grad = f1(X, f1_analytic_par, nargout=2)
+    f1_numeric_par = {'epsilon': E_MACHINE, 'f_par': f1_analytic_par}
+    f1_numeric_grad = numdiff(f1, X, f1_numeric_par, nargout=1)
 
-    print("======> Task3_1_func output:")
-    print("Value =\n", val)
-    print("Gradient =\n", grad)
-    print("Hessian =\n", hess)
+    # Compute difference between numerical and analytical gradient
+    f1_grad_error = abs(f1_analytic_grad - f1_numeric_grad)
+    print("analytic grad=", f1_analytic_grad,
+          "\nnumeric grad=", f1_numeric_grad,
+          "\nerror=", f1_grad_error)
 
-    sin_dict = {'A': I,
-                'val': sin_val,
-                'grad': sin_grad,
-                'hessian': sin_hessian}
-    res1 = f1(data, sin_dict, nargout=3)
-    print("======> f1 output:")
-    print("Value =\n",res1[0])
-    print("Gradient =\n", res1[1])
-    print("Hessian =\n", res1[2])
 
-    exp_dict = {"phi_val": sin_val,
-                "phi_g": sin_grad,
-                "phi_h": sin_hessian,
-                "h": exp_val,
-                "h'": exp_grad,
-                "h''": exp_hess}
 
-    res2 = f2(data, exp_dict, nargout=3)
-    print("======> f2 output:")
-    print("Value =\n", res2[0])
-    print("Gradient =\n", res2[1])
-    print("Hessian =\n", res2[2])
-
-    numdiff_par = dict({'e': mat, 'fun_par': sin_dict, 'gradient': sin_grad})
-    a, b = numdiff(f1, data, numdiff_par, nargout=2)
-    print("\n\n\na=\n", a, "\nb=\n", b)
+    # '''
+    # A testing function for the excercise's required functions
+    # :return:
+    # '''
+    # data = np.array([2, 1, 8])[:, np.newaxis]  # column vector
+    # mat = np.array([[2, 7, 6],
+    #                 [9, 5, 1],
+    #                 [4, 3, 8]])
+    # I = np.array([[1, 0, 0],
+    #                 [0, 1, 0],
+    #                 [0, 0, 1]])
+    #
+    # val, grad, hess = Task3_1_func(data)
+    #
+    # print("======> Task3_1_func output:")
+    # print("Value =\n", val)
+    # print("Gradient =\n", grad)
+    # print("Hessian =\n", hess)
+    #
+    # sin_dict = {'A': I,
+    #             'val': sin_val,
+    #             'grad': sin_grad,
+    #             'hessian': sin_hessian}
+    # res1 = f1(data, sin_dict, nargout=3)
+    # print("======> f1 output:")
+    # print("Value =\n",res1[0])
+    # print("Gradient =\n", res1[1])
+    # print("Hessian =\n", res1[2])
+    #
+    # exp_dict = {"phi_val": sin_val,
+    #             "phi_g": sin_grad,
+    #             "phi_h": sin_hessian,
+    #             "h": exp_val,
+    #             "h'": exp_grad,
+    #             "h''": exp_hess}
+    #
+    # res2 = f2(data, exp_dict, nargout=3)
+    # print("======> f2 output:")
+    # print("Value =\n", res2[0])
+    # print("Gradient =\n", res2[1])
+    # print("Hessian =\n", res2[2])
+    #
+    # numdiff_par = dict({'e': mat, 'fun_par': sin_dict, 'gradient': sin_grad})
+    # a, b = numdiff(f1, data, numdiff_par, nargout=2)
+    # print("\n\n\na=\n", a, "\nb=\n", b)
 
 
 def f1(x, par, nargout=3):
@@ -213,9 +233,6 @@ def Task3_2_func(x):
     return exp_val(x), exp_grad(x), exp_hess(x)
 
 
-E_MACHINE = 2 * pow(10, -16)
-
-
 def numdiff(myfunc, x, par, nargout=2):
     '''
     computes gradient and hessian of myfunc numerically
@@ -223,8 +240,8 @@ def numdiff(myfunc, x, par, nargout=2):
     :param myfunc: pointer to either of f1 or f2
     :param x: Input vector R^(mx1)
     :param par: a dictionary including keys:
-        'e' : A matrix R^(mxm)
-        'fun_par' : par dictionary for my_fun
+        'epsilon' : The incerement of x
+        'f_par' : parameters dictionary given to function
     :param nargout: Like nargout of matlab, can be 1 or 2
     :return: [gnum, Hnum]
         gnum : Numerical estimation of function gradient
@@ -233,21 +250,24 @@ def numdiff(myfunc, x, par, nargout=2):
     assert callable(myfunc)
     assert isinstance(x, np.ndarray)
     assert isinstance(par, dict)
-    assert 'e' in par.keys()
-    assert 'fun_par' in par.keys()
+    assert 'epsilon' in par.keys()
     assert isinstance(nargout, int)
     assert nargout in range(1, 3)
 
+    epsilon_tot = par['epsilon']
+    assert isinstance(epsilon_tot, float)
     max_abs_val_of_x = max(x.min(), x.max(), key=abs)
-    epsilon = pow(E_MACHINE, 1/3) * max_abs_val_of_x
-    e = par['e']
-    my_func_par = par['fun_par']
+    epsilon = pow(epsilon_tot, 1 / 3) * max_abs_val_of_x
+
+    standard_base = np.array(((1, 0, 0),
+                              (0, 1, 0),
+                              (0, 0, 1)))
 
     grad = []
     for i in range(0, len(x)):
-        right_g_i = myfunc(x+epsilon*e[i], my_func_par, nargout=2)[1]
-        left_g_i = myfunc((x-epsilon*e[i]), my_func_par, nargout=2)[1]
-        g_i = (right_g_i + left_g_i)/(2*epsilon)
+        right_g_i = myfunc(x+epsilon*standard_base[i], par['f_par'], nargout=1)
+        left_g_i = myfunc(x-epsilon*standard_base[i], par['f_par'], nargout=1)
+        g_i = (right_g_i - left_g_i)/(2*epsilon)
         grad.append(g_i)
     grad = np.array(grad)
 
