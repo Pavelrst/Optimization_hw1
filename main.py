@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib as pl
+import matplotlib.pyplot as plt
 
 
 def main():
@@ -33,7 +33,22 @@ def main():
           "\nerror=", f2_grad_error,
           "\n\n\n")
 
+    names = ['X1', 'X2', 'X3']
+    plt.figure(1)
+    plt.subplot(121)
+    plt.bar(names, f1_grad_error)
+    plt.xlabel('element index')
+    plt.ylabel('error')
+    plt.title('f1')
 
+    plt.subplot(122)
+    plt.bar(names, f2_grad_error, color='r')
+    plt.xlabel('element index')
+    plt.ylabel('error')
+    plt.title('f2')
+
+    plt.suptitle('error of numeric function by element index')
+    plt.show()
 
     # '''
     # A testing function for the excercise's required functions
