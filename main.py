@@ -9,10 +9,10 @@ def main():
                   [4, 3, 8]])
     E_MACHINE = 2 * pow(10, -16)
 
-    f1_analytic_par = {'A': A, 'val': sin_val, 'grad': sin_grad}
-    f1_val, f1_analytic_grad = f1(X, f1_analytic_par, nargout=2)
-    f1_numeric_par = {'epsilon': E_MACHINE, 'f_par': f1_analytic_par}
-    f1_numeric_grad = numdiff(f1, X, f1_numeric_par, nargout=1)
+    f1_analytic_par = {'A': A, 'val': sin_val, 'grad': sin_grad, 'hessian': sin_hessian}
+    f1_val, f1_analytic_grad, f1_analytic_hess = f1(X, f1_analytic_par, nargout=3)
+    f1_numeric_par = {'epsilon': E_MACHINE, 'f_par': f1_analytic_par, 'gradient': f1_grad}
+    f1_numeric_grad, f1_numeric_hess = numdiff(f1, X, f1_numeric_par, nargout=2)
 
     f2_analytic_par = {"phi_val": sin_val, "h": exp_val,
                        "phi_g": sin_grad, "h'": exp_grad}
@@ -50,51 +50,27 @@ def main():
     plt.suptitle('error of numeric function by element index')
     plt.show()
 
-    # '''
-    # A testing function for the excercise's required functions
-    # :return:
-    # '''
-    # data = np.array([2, 1, 8])[:, np.newaxis]  # column vector
-    # mat = np.array([[2, 7, 6],
-    #                 [9, 5, 1],
-    #                 [4, 3, 8]])
-    # I = np.array([[1, 0, 0],
-    #                 [0, 1, 0],
-    #                 [0, 0, 1]])
-    #
-    # val, grad, hess = Task3_1_func(data)
-    #
-    # print("======> Task3_1_func output:")
-    # print("Value =\n", val)
-    # print("Gradient =\n", grad)
-    # print("Hessian =\n", hess)
-    #
-    # sin_dict = {'A': I,
-    #             'val': sin_val,
-    #             'grad': sin_grad,
-    #             'hessian': sin_hessian}
-    # res1 = f1(data, sin_dict, nargout=3)
-    # print("======> f1 output:")
-    # print("Value =\n",res1[0])
-    # print("Gradient =\n", res1[1])
-    # print("Hessian =\n", res1[2])
-    #
-    # exp_dict = {"phi_val": sin_val,
-    #             "phi_g": sin_grad,
-    #             "phi_h": sin_hessian,
-    #             "h": exp_val,
-    #             "h'": exp_grad,
-    #             "h''": exp_hess}
-    #
-    # res2 = f2(data, exp_dict, nargout=3)
-    # print("======> f2 output:")
-    # print("Value =\n", res2[0])
-    # print("Gradient =\n", res2[1])
-    # print("Hessian =\n", res2[2])
-    #
-    # numdiff_par = dict({'e': mat, 'fun_par': sin_dict, 'gradient': sin_grad})
-    # a, b = numdiff(f1, data, numdiff_par, nargout=2)
-    # print("\n\n\na=\n", a, "\nb=\n", b)
+    # plot hessian
+    plt.subplot(131)
+    plt.imshow(f1_analytic_hess)
+    plt.title('analytical')
+    plt.colorbar()
+
+    plt.subplot(132)
+    plt.imshow(f1_numeric_hess)
+    plt.title('numerical')
+    plt.colorbar()
+
+    plt.subplot(133)
+    plt.imshow(abs(f1_analytic_hess - f1_numeric_hess))
+    plt.title('difference')
+    plt.colorbar()
+
+    plt.tight_layout()
+    plt.suptitle('f1 hessians and their difference')
+    plt.show()
+
+
 
 
 def f1(x, par, nargout=3):
@@ -135,9 +111,14 @@ def f1(x, par, nargout=3):
         return phi_val, grad
 
     phi_H = par['hessian'](np.dot(mat, x))
-    hess = np.dot(np.dot(matT,phi_H)[:,:,0], mat)
+    hess = np.dot(np.dot(matT, phi_H), mat)
 
     return phi_val, grad, hess
+
+def f1_grad(x, par):
+    useless, ret = f1(x, par, nargout=2)
+    return ret
+
 
 
 def f2(x, par, nargout=3):
@@ -232,7 +213,8 @@ def sin_hessian(x):
     hessian = [[dx1dx1, dx1dx2, dx1dx3],
                [dx2dx1, dx2dx2, dx2dx3],
                [dx3dx1, dx3dx2, dx3dx3]]
-    return hessian
+
+    return np.array(hessian)
 
 
 def Task3_1_func(x):
@@ -303,7 +285,9 @@ def numdiff(myfunc, x, par, nargout=2):
     analytic_grad = par['gradient']
     assert callable(analytic_grad)
     for i in range(0, len(x)):
-        h_i = (analytic_grad(x+epsilon*e[i])-analytic_grad(x-epsilon*e[i]))/(2*epsilon)
+        right_sample = analytic_grad(x+epsilon*standard_base[i], par['f_par'])
+        left_sample = analytic_grad(x-epsilon*standard_base[i], par['f_par'])
+        h_i = (right_sample-left_sample)/(2*epsilon)
         hess.append(h_i)
     hess = np.array(hess)
 
