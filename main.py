@@ -15,42 +15,63 @@ def main():
     f1_numeric_grad, f1_numeric_hess = numdiff(f1, X, f1_numeric_par, nargout=2)
 
     f2_analytic_par = {"phi_val": sin_val, "h": exp_val,
-                       "phi_g": sin_grad, "h'": exp_grad}
-    f2_val, f2_analytic_grad = f2(X, f2_analytic_par, nargout=2)
-    f2_numeric_par = {'epsilon': E_MACHINE, 'f_par': f2_analytic_par}
-    f2_numeric_grad = numdiff(f2, X, f2_numeric_par, nargout=1)
+                       "phi_g": sin_grad, "h'": exp_grad,
+                       "phi_h": sin_hessian, "h''": exp_hess}
+    f2_val, f2_analytic_grad, f2_analytic_hess = f2(X, f2_analytic_par, nargout=3)
+    f2_numeric_par = {'epsilon': E_MACHINE, 'f_par': f2_analytic_par, 'gradient': f2_grad}
+    f2_numeric_grad, f2_numeric_hess = numdiff(f2, X, f2_numeric_par, nargout=2)
 
     # Compute difference between numerical and analytical gradient
     f1_grad_error = abs(f1_analytic_grad - f1_numeric_grad)
-    print("analytic grad=", f1_analytic_grad,
-          "\nnumeric grad=", f1_numeric_grad,
-          "\nerror=", f1_grad_error,
-          "\n\n\n")
-
     f2_grad_error = abs(f2_analytic_grad - f2_numeric_grad)
-    print("analytic grad=", f2_analytic_grad,
-          "\nnumeric grad=", f2_numeric_grad,
-          "\nerror=", f2_grad_error,
-          "\n\n\n")
 
+    # question 5.1
     names = ['X1', 'X2', 'X3']
-    plt.figure(1)
-    plt.subplot(121)
+
+    # graph 1
+
+    plt.figure(figsize=(15, 5))
+    plt.suptitle('f1 error of gradient numeric function by element index')
+    plt.subplot(131)
+    plt.bar(names, f1_analytic_grad)
+    plt.xlabel('element index')
+    plt.ylabel('analytic gradient')
+    plt.title('f1')
+    plt.subplot(132)
+    plt.bar(names, f1_numeric_grad)
+    plt.xlabel('element index')
+    plt.ylabel('numeric gradient')
+    plt.title('f1')
+    plt.subplot(133)
     plt.bar(names, f1_grad_error)
     plt.xlabel('element index')
     plt.ylabel('error')
     plt.title('f1')
+    plt.show()
 
-    plt.subplot(122)
-    plt.bar(names, f2_grad_error, color='r')
+    # graph 2
+    plt.figure(figsize=(15, 5))
+    plt.suptitle('f2 error of gradient numeric function by element index')
+    plt.subplot(131)
+    plt.bar(names, f2_analytic_grad)
+    plt.xlabel('element index')
+    plt.ylabel('analytic gradient')
+    plt.title('f2')
+    plt.subplot(132)
+    plt.bar(names, f2_numeric_grad)
+    plt.xlabel('element index')
+    plt.ylabel('numeric gradient')
+    plt.title('f2')
+    plt.subplot(133)
+    plt.bar(names, f2_grad_error)
     plt.xlabel('element index')
     plt.ylabel('error')
     plt.title('f2')
-
-    plt.suptitle('error of numeric function by element index')
     plt.show()
 
-    # plot hessian
+    # question 2
+    # graph 1
+    plt.figure(figsize=(18, 5))
     plt.subplot(131)
     plt.imshow(f1_analytic_hess)
     plt.title('analytical')
@@ -66,10 +87,54 @@ def main():
     plt.title('difference')
     plt.colorbar()
 
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.suptitle('f1 hessians and their difference')
     plt.show()
 
+    # graph 2
+    plt.figure(figsize=(18, 5))
+    plt.subplot(131)
+    plt.imshow(f2_analytic_hess)
+    plt.title('analytical')
+    plt.colorbar()
+
+    plt.subplot(132)
+    plt.imshow(f2_numeric_hess)
+    plt.title('numerical')
+    plt.colorbar()
+
+    plt.subplot(133)
+    plt.imshow(abs(f2_analytic_hess - f2_numeric_hess))
+    plt.title('difference')
+    plt.colorbar()
+
+    plt.suptitle('f1 hessians and their difference')
+    plt.show()
+
+    print("\n\n\nf2 analytical hessian=\n", f2_analytic_hess)
+    print("\n\n\nf2 numerical hessian=\n", f2_numeric_hess)
+
+    # part 3
+    EPSILON_VALS = 1000
+    EPSILON_INCREMENT = 1 / EPSILON_VALS
+
+    # graph 3 for f1
+    f1_grad_errors_by_eps = []
+
+    for i in range(1, EPSILON_VALS):
+        # f1_analytic_par = {'A': A, 'val': sin_val, 'grad': sin_grad, 'hessian': sin_hessian}
+        f1_val, f1_analytic_grad, f1_analytic_hess = f1(X, f1_analytic_par, nargout=3)
+        f1_numeric_par = {'epsilon': EPSILON_INCREMENT * i, 'f_par': f1_analytic_par,
+                          'gradient': f1_grad}
+        f1_numeric_grad, f1_numeric_hess = numdiff(f1, X, f1_numeric_par, nargout=2)
+        f1_grad_errors_by_eps.append(max(abs(f1_numeric_grad-f1_analytic_grad)))
+
+    plt.figure()
+    plt.plot([x * EPSILON_INCREMENT for x in range(1, 1000)], f1_grad_errors_by_eps)
+    plt.show()
+
+    print('Minimal error in absolute value of gradient is achieved at epsilon',
+          (np.argmin(f1_grad_errors_by_eps)+1)*EPSILON_INCREMENT)
 
 
 
@@ -115,7 +180,18 @@ def f1(x, par, nargout=3):
 
     return phi_val, grad, hess
 
+
 def f1_grad(x, par):
+    '''
+    nonlinear multivariate function, f1:R^n->R, f1(x) = phi(Ax)
+
+    :param x: function argument, vector. x is R^(n x 1)
+    :param par: A dictionary
+            'A' : matrix R^(m x n)
+            'val' : pointer to function phi, nonlinear multivariate function R^m -> R
+            'grad' : pointer to gradient function of phi
+    :return: f1'(x)
+    '''
     useless, ret = f1(x, par, nargout=2)
     return ret
 
@@ -139,9 +215,9 @@ def f2(x, par, nargout=3):
             "h''" : pointer to second derivative function of h
     :param nargout: number of arguments given, mimics nargout of matlab, can be 1,2 or 3
     :return: depends on nargout.
-        If nargout is 1, returns f(x)
-        If nargout is 2, returns (f(x), f'(x))
-        If nargout is 3, returns (f(x), f'(x), f''(x))
+        If nargout is 1, returns f2(x)
+        If nargout is 2, returns (f2(x), f2'(x))
+        If nargout is 3, returns (f2(x), f2'(x), f2''(x))
     '''
 
     assert isinstance(x, np.ndarray)
@@ -164,6 +240,23 @@ def f2(x, par, nargout=3):
     f2_hess = hess_phi * (h_der + h_sec_der)
 
     return f2_val, f2_grad, f2_hess
+
+
+def f2_grad(x, par):
+    '''
+    h2(x) = f(phi(x))
+    f is a nonlinear multivariate function f2: R^n -> R
+
+    :param x: function argument, vector. x is R^(n x 1)
+    :param par: A dictionary
+            "phi_val" : pointer to function phi, nonlinear multivariate function R^m -> R
+            "h" : pointer to nonlinear scalar function, h: R -> R
+            "phi_g" : pointer to gradient function of phi
+            "h'" : pointer to derivative function of h
+    :return: f2'(x)
+    '''
+    useless, ret = f2(x, par, nargout=2)
+    return ret
 
 
 def sin_val(x):
@@ -249,6 +342,7 @@ def numdiff(myfunc, x, par, nargout=2):
     :param par: a dictionary including keys:
         'epsilon' : The incerement of x
         'f_par' : parameters dictionary given to function
+        'gradient' : gradient function of f
     :param nargout: Like nargout of matlab, can be 1 or 2
     :return: [gnum, Hnum]
         gnum : Numerical estimation of function gradient
