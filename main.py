@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 
 def main():
     X = np.array([1, 1, 1])
-    A = np.array([[2, 7, 6],
-                  [9, 5, 1],
-                  [4, 3, 8]])
+    A = np.array([[8, 1, 6],
+                  [3, 5, 7],
+                  [4, 9, 2]])
     E_MACHINE = 2 * pow(10, -16)
 
     f1_analytic_par = {'A': A, 'val': sin_val, 'grad': sin_grad, 'hessian': sin_hessian}
@@ -30,7 +30,7 @@ def main():
 
     # graph 1
 
-    plt.figure(figsize=(15, 5))
+    plt.figure(figsize=(18, 5))
     plt.suptitle('f1 error of gradient numeric function by element index')
     plt.subplot(131)
     plt.bar(names, f1_analytic_grad)
@@ -50,7 +50,7 @@ def main():
     plt.show()
 
     # graph 2
-    plt.figure(figsize=(15, 5))
+    plt.figure(figsize=(18, 5))
     plt.suptitle('f2 error of gradient numeric function by element index')
     plt.subplot(131)
     plt.bar(names, f2_analytic_grad)
@@ -71,7 +71,7 @@ def main():
 
     # question 2
     # graph 1
-    plt.figure(figsize=(18, 5))
+    plt.figure(figsize=(30, 5))
     plt.subplot(131)
     plt.imshow(f1_analytic_hess)
     plt.title('analytical')
@@ -87,7 +87,6 @@ def main():
     plt.title('difference')
     plt.colorbar()
 
-    # plt.tight_layout()
     plt.suptitle('f1 hessians and their difference')
     plt.show()
 
@@ -109,23 +108,25 @@ def main():
     plt.colorbar()
 
     plt.suptitle('f2 hessians and their difference')
+
     plt.show()
 
     print("\n\n\nf2 analytic hessian=\n", f2_analytic_hess)
     print("\n\n\nf2 numeric hessian=\n", f2_numeric_hess)
 
     # part 3
-    EPSILON_VALS = 100000
-    EPSILON_INCREMENT = 1 / EPSILON_VALS
-    x_axis = [x * EPSILON_INCREMENT for x in range(1, EPSILON_VALS)]
+    # EPSILON_VALS = 100000
+    # EPSILON_INCREMENT = 1 / EPSILON_VALS
+    # x_axis = [x * EPSILON_INCREMENT for x in range(1, EPSILON_VALS)]
+    x_axis = np.logspace(-20, 0, 1000)
 
     # graph 3 for f1
     f1_grad_errors_by_eps = []
     f1_hess_errors_by_eps = []
 
-    for i in range(1, EPSILON_VALS):
+    for i in range(0, len(x_axis)):
         f1_val, f1_analytic_grad, f1_analytic_hess = f1(X, f1_analytic_par, nargout=3)
-        f1_numeric_par = {'epsilon': EPSILON_INCREMENT * i, 'f_par': f1_analytic_par,
+        f1_numeric_par = {'epsilon': x_axis[i], 'f_par': f1_analytic_par,
                           'gradient': f1_grad}
         f1_numeric_grad, f1_numeric_hess = numdiff(f1, X, f1_numeric_par, nargout=2)
         f1_grad_errors_by_eps.append(max(abs(f1_numeric_grad - f1_analytic_grad)))
@@ -135,22 +136,24 @@ def main():
     plt.subplot(121)
 
     plt.yscale('log')
+    plt.xscale('log')
     plt.title('f1')
     plt.xlabel('epsilon')
+    plt.ylabel('infinity norm of error')
     plt.autoscale(enable=True, axis='y', tight=False)
     plt.grid(True)
     plt.plot(x_axis, f1_grad_errors_by_eps)
 
     print('Minimal error in absolute value of gradient is achieved at epsilon',
-          (np.argmin(f1_grad_errors_by_eps) + 1) * EPSILON_INCREMENT)
+          x_axis[np.argmin(f1_grad_errors_by_eps)])
 
     # graph 3 for f2
     f2_grad_errors_by_eps = []
     f2_hess_errors_by_eps = []
 
-    for i in range(1, EPSILON_VALS):
+    for i in range(0, len(x_axis)):
         f2_val, f2_analytic_grad, f2_analytic_hess = f2(X, f2_analytic_par, nargout=3)
-        f2_numeric_par = {'epsilon': EPSILON_INCREMENT * i, 'f_par': f2_analytic_par,
+        f2_numeric_par = {'epsilon': x_axis[i], 'f_par': f2_analytic_par,
                           'gradient': f2_grad}
         f2_numeric_grad, f2_numeric_hess = numdiff(f2, X, f2_numeric_par, nargout=2)
         f2_grad_errors_by_eps.append(max(abs(f2_numeric_grad - f2_analytic_grad)))
@@ -158,8 +161,10 @@ def main():
 
     plt.subplot(122)
     plt.plot(x_axis, f2_grad_errors_by_eps)
+    plt.xscale('log')
     plt.yscale('log')
     plt.xlabel('epsilon')
+    plt.ylabel('infinity norm of error')
     plt.title('f2')
     plt.grid(True)
 
@@ -167,32 +172,36 @@ def main():
     plt.show()
 
     print('Minimal error in absolute value of hessian is achieved at epsilon',
-          (np.argmin(f2_grad_errors_by_eps) + 1) * EPSILON_INCREMENT)
+          x_axis[np.argmin(f1_grad_errors_by_eps)])
 
     # Part 4
     plt.figure(figsize=(14, 5))
     plt.subplot(121)
 
     plt.yscale('log')
+    plt.xscale('log')
     plt.title('f1')
     plt.xlabel('epsilon')
+    plt.ylabel('infinity norm of error')
     plt.autoscale(enable=True, axis='y', tight=False)
     plt.grid(True)
     plt.plot(x_axis, f1_hess_errors_by_eps)
 
     print('Minimal error in absolute value of gradient is achieved at epsilon',
-          (np.argmin(f1_hess_errors_by_eps) + 1) * EPSILON_INCREMENT)
+          x_axis[np.argmin(f1_grad_errors_by_eps)])
 
     plt.subplot(122)
     plt.yscale('log')
+    plt.xscale('log')
     plt.title('f2')
     plt.xlabel('epsilon')
+    plt.ylabel('infinity norm of error')
     plt.autoscale(enable=True, axis='y', tight=False)
     plt.grid(True)
     plt.plot(x_axis, f2_hess_errors_by_eps)
 
     print('Minimal error in absolute value of hessian is achieved at epsilon',
-          (np.argmin(f2_hess_errors_by_eps) + 1) * EPSILON_INCREMENT)
+          x_axis[np.argmin(f1_grad_errors_by_eps)])
 
     plt.suptitle('log of abs of norm infinity of error in numeric hessian computation')
     plt.show()
@@ -297,8 +306,11 @@ def f2(x, par, nargout=3):
 
     hess_phi = par["phi_h"](x)
     h_sec_der = par["h''"](phi_val)
-    f2_hess = hess_phi * (h_der + h_sec_der)
+    # f2_hess = hess_phi * (h_der + h_sec_der)
 
+    a = hess_phi * h_der
+    b = np.dot(grad_phi, np.transpose(grad_phi))*h_sec_der
+    f2_hess = a + b
     return f2_val, f2_grad, f2_hess
 
 
