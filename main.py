@@ -30,7 +30,7 @@ def main():
 
     # graph 1
 
-    plt.figure(figsize=(18, 5))
+    plt.figure(figsize=(18, 12))
     plt.suptitle('f1 error of gradient numeric function by element index')
     plt.subplot(131)
     plt.bar(names, f1_analytic_grad)
@@ -45,8 +45,9 @@ def main():
     plt.subplot(133)
     plt.bar(names, f1_grad_error)
     plt.xlabel('element index')
-    plt.ylabel('error')
+    plt.ylabel('gradient error')
     plt.title('f1')
+    # plt.tight_layout()
     plt.show()
 
     # graph 2
@@ -65,7 +66,7 @@ def main():
     plt.subplot(133)
     plt.bar(names, f2_grad_error)
     plt.xlabel('element index')
-    plt.ylabel('error')
+    plt.ylabel('gradient error')
     plt.title('f2')
     plt.show()
 
@@ -74,17 +75,17 @@ def main():
     plt.figure(figsize=(30, 5))
     plt.subplot(131)
     plt.imshow(f1_analytic_hess)
-    plt.title('analytical')
+    plt.title('analytical hessian')
     plt.colorbar()
 
     plt.subplot(132)
     plt.imshow(f1_numeric_hess)
-    plt.title('numerical')
+    plt.title('numerical hessian')
     plt.colorbar()
 
     plt.subplot(133)
     plt.imshow(abs(f1_analytic_hess - f1_numeric_hess))
-    plt.title('difference')
+    plt.title('hessian difference')
     plt.colorbar()
 
     plt.suptitle('f1 hessians and their difference')
@@ -94,25 +95,23 @@ def main():
     plt.figure(figsize=(18, 5))
     plt.subplot(131)
     plt.imshow(f2_analytic_hess)
-    plt.title('analytical')
+    plt.title('analytical hessian')
     plt.colorbar()
 
     plt.subplot(132)
     plt.imshow(f2_numeric_hess)
-    plt.title('numerical')
+    plt.title('numerical hessian')
     plt.colorbar()
 
     plt.subplot(133)
     plt.imshow(abs(f2_analytic_hess - f2_numeric_hess))
-    plt.title('difference')
+    plt.title('hessian difference')
     plt.colorbar()
 
     plt.suptitle('f2 hessians and their difference')
 
     plt.show()
 
-    print("\n\n\nf2 analytic hessian=\n", f2_analytic_hess)
-    print("\n\n\nf2 numeric hessian=\n", f2_numeric_hess)
 
     # part 3
     x_axis = np.logspace(-50, 0, 1000)
@@ -168,7 +167,7 @@ def main():
     print('Minimal error of f2 in absolute value of gradient is achieved at epsilon',
           x_axis[np.argmin(f2_grad_errors_by_eps)])
 
-    plt.suptitle('log of abs of norm infinity of error in numeric gradient computation')
+    plt.suptitle('log of infinity norm of error vector of gradient')
     plt.show()
 
     # Part 4
@@ -200,7 +199,7 @@ def main():
     print('Minimal error of f2 in absolute value of gradient is achieved at epsilon',
           x_axis[np.argmin(f2_hess_errors_by_eps)])
 
-    plt.suptitle('log of abs of norm infinity of error in numeric hessian computation')
+    plt.suptitle('log of infinity norm of error vector of hessian')
     plt.show()
 
 
