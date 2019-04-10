@@ -115,9 +115,6 @@ def main():
     print("\n\n\nf2 numeric hessian=\n", f2_numeric_hess)
 
     # part 3
-    # EPSILON_VALS = 100000
-    # EPSILON_INCREMENT = 1 / EPSILON_VALS
-    # x_axis = [x * EPSILON_INCREMENT for x in range(1, EPSILON_VALS)]
     x_axis = np.logspace(-20, 0, 1000)
 
     # graph 3 for f1
@@ -129,7 +126,7 @@ def main():
         f1_numeric_par = {'epsilon': x_axis[i], 'f_par': f1_analytic_par,
                           'gradient': f1_grad}
         f1_numeric_grad, f1_numeric_hess = numdiff(f1, X, f1_numeric_par, nargout=2)
-        f1_grad_errors_by_eps.append(max(abs(f1_numeric_grad - f1_analytic_grad)))
+        f1_grad_errors_by_eps.append(np.max(abs(f1_numeric_grad - f1_analytic_grad)))
         f1_hess_errors_by_eps.append(np.max(abs(f1_numeric_hess - f1_analytic_hess)))
 
     plt.figure(figsize=(14, 5))
@@ -144,7 +141,7 @@ def main():
     plt.grid(True)
     plt.plot(x_axis, f1_grad_errors_by_eps)
 
-    print('Minimal error in absolute value of gradient is achieved at epsilon',
+    print('Minimal error of f1 in absolute value of gradient is achieved at epsilon',
           x_axis[np.argmin(f1_grad_errors_by_eps)])
 
     # graph 3 for f2
@@ -171,8 +168,8 @@ def main():
     plt.suptitle('log of abs of norm infinity of error in numeric gradient computation')
     plt.show()
 
-    print('Minimal error in absolute value of hessian is achieved at epsilon',
-          x_axis[np.argmin(f1_grad_errors_by_eps)])
+    print('Minimal error of f2 in absolute value of gradient is achieved at epsilon',
+          x_axis[np.argmin(f2_grad_errors_by_eps)])
 
     # Part 4
     plt.figure(figsize=(14, 5))
@@ -187,8 +184,8 @@ def main():
     plt.grid(True)
     plt.plot(x_axis, f1_hess_errors_by_eps)
 
-    print('Minimal error in absolute value of gradient is achieved at epsilon',
-          x_axis[np.argmin(f1_grad_errors_by_eps)])
+    print('Minimal error of f1 in absolute value of hessian is achieved at epsilon',
+          x_axis[np.argmin(f1_hess_errors_by_eps)])
 
     plt.subplot(122)
     plt.yscale('log')
@@ -200,8 +197,8 @@ def main():
     plt.grid(True)
     plt.plot(x_axis, f2_hess_errors_by_eps)
 
-    print('Minimal error in absolute value of hessian is achieved at epsilon',
-          x_axis[np.argmin(f1_grad_errors_by_eps)])
+    print('Minimal error of f2 in absolute value of gradient is achieved at epsilon',
+          x_axis[np.argmin(f2_hess_errors_by_eps)])
 
     plt.suptitle('log of abs of norm infinity of error in numeric hessian computation')
     plt.show()
