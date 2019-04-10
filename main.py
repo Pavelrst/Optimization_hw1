@@ -115,7 +115,7 @@ def main():
     print("\n\n\nf2 numeric hessian=\n", f2_numeric_hess)
 
     # part 3
-    x_axis = np.logspace(-20, 0, 1000)
+    x_axis = np.logspace(-50, 0, 1000)
 
     # graph 3 for f1
     f1_grad_errors_by_eps = []
@@ -165,11 +165,11 @@ def main():
     plt.title('f2')
     plt.grid(True)
 
-    plt.suptitle('log of abs of norm infinity of error in numeric gradient computation')
-    plt.show()
-
     print('Minimal error of f2 in absolute value of gradient is achieved at epsilon',
           x_axis[np.argmin(f2_grad_errors_by_eps)])
+
+    plt.suptitle('log of abs of norm infinity of error in numeric gradient computation')
+    plt.show()
 
     # Part 4
     plt.figure(figsize=(14, 5))
@@ -306,7 +306,7 @@ def f2(x, par, nargout=3):
     # f2_hess = hess_phi * (h_der + h_sec_der)
 
     a = hess_phi * h_der
-    b = np.dot(grad_phi, np.transpose(grad_phi))*h_sec_der
+    b = np.outer(grad_phi, np.transpose(grad_phi))*h_sec_der
     f2_hess = a + b
     return f2_val, f2_grad, f2_hess
 
